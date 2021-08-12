@@ -21,13 +21,14 @@ public class PersonController {
 
     @PostMapping("/populate")
     public void sendListOfPersons() {
-        List<Person> listOfPersons = PersonGenerator.generatePersons(200, PersonGenerator.FAST_SUPPLIER);
+        List<Person> listOfPersons = PersonGenerator.generatePersons(10000, PersonGenerator.FAST_SUPPLIER);
 
         for (Person person : listOfPersons) {
             template.send(TOPIC, person);
         }
 
         System.out.println("SENT A REQUEST ON " + TOPIC + " TOPIC WITH " + listOfPersons.size() + " PERSONS!");
+//        System.out.println(listOfPersons.stream().map(p -> p.getId()).distinct().count());
     }
 
     @PostMapping("/add")

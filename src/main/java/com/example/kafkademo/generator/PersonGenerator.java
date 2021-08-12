@@ -14,13 +14,16 @@ public class PersonGenerator {
 
     public static final String FAST_SUPPLIER = "FAST_SUPPLIER";
     public static final String SLOW_SUPPLIER = "SLOW_SUPPLIER";
+    public static final Integer LIMIT = 99999;
 
     public static List<Person> generatePersons(int numberOfElements, String chosenSupplier) {
         Supplier<Person> supplier = getSupplier(chosenSupplier);
+        List<Long> uniqueIDs = generateUniqueIDs(numberOfElements);
 
         System.out.println("GENERATING " + numberOfElements + " PERSONS.....");
 
         List<Person> listOfPersons = Stream.generate(supplier)
+                .map(person -> mapUniqueIDToPerson(person, uniqueIDs))
                 .limit(numberOfElements)
                 .collect(Collectors.toList());
 
@@ -35,11 +38,16 @@ public class PersonGenerator {
         return PersonGenerator::newPersonUncleBob;
     }
 
+    private static Person mapUniqueIDToPerson(Person person, List<Long> uniqueIDs) {
+        person.setId(uniqueIDs.get(0));
+        uniqueIDs.remove(0);
+        return person;
+    }
+
     private static Person newPersonUncleBob() {
         PersonDto personDto = generateFighterData();
 
         return Person.builder()
-                .id(personDto.getId())
                 .age(personDto.getAge())
                 .firstName(personDto.getFirstName())
                 .lastName(personDto.getLastName())
@@ -48,15 +56,17 @@ public class PersonGenerator {
 
     private static Person newPersonUglyButFast() {
         return Person.builder()
-                .id(generateRandomLong())
                 .age(generateRandomBoundedInt(40))
                 .firstName(generateRandomString())
                 .lastName(generateRandomString())
                 .build();
     }
 
-    public static long generateRandomLong() {
-        return new Random().nextInt(1999);
+    private static List<Long> generateUniqueIDs(int numberOfIDs) {
+        Random random = new Random();
+        List<Long> randomLongs = random.longs(1, LIMIT).distinct().limit(numberOfIDs).boxed().collect(Collectors.toList());
+
+        return randomLongs;
     }
 
     public static int generateRandomBoundedInt(int upperBound) {
@@ -79,13 +89,11 @@ public class PersonGenerator {
     private static PersonDto generateFighterData() {
         Faker faker = new Faker();
 
-        Long id = generateRandomLong();
         int age = generateRandomBoundedInt(30);
         String firstName = faker.name().firstName();
         String lastName = faker.name().lastName();
 
         PersonDto personDto = PersonDto.builder()
-                .id(id)
                 .firstName(firstName)
                 .lastName(lastName)
                 .age(age)
