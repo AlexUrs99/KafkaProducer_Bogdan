@@ -1,0 +1,47 @@
+version: "3"
+services:
+  zookeeper:
+    container_name: zookeeper-container
+    image: zookeeper
+    ports:
+      - "2181:2181"
+  kafka:
+    container_name: kafka-container
+    image: wurstmeister/kafka
+    ports:
+      - "9093:9093"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_LISTENERS: LOCALDOCKER://:9092,LOCAL://:9093
+      KAFKA_ADVERTISED_LISTENERS: LOCALDOCKER://kafka:9092,LOCAL://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LOCALDOCKER:PLAINTEXT,LOCAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LOCALDOCKER
+
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      ALLOW_PLAINTEXT_LISTENER: 'yes'
+#  kafka-producer:
+#    container_name: producer-backend-container
+#    image: producer-backend
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      - kafka
+#  kafka-consumer:
+#    container_name: consumer-backend-container
+#    image: consumer-backend
+#    build:
+#      context: /home/alexandruurs/SomeData/TryingStuff/KafkaConsumerDemo
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8081:8081"
+#    depends_on:
+#      - kafka
+
+
